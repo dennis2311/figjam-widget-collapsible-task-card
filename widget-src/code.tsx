@@ -13,13 +13,22 @@ const {
 
 const colors: string[] = ["#FFA198", "#BDE3FF", "#AFF4C6", "#FFE8A3"];
 
-const initialRows: { rowKey: string; headerText: string }[] = [
-  { rowKey: "date", headerText: "기간" },
-  { rowKey: "status", headerText: "현재 상태" },
-  { rowKey: "problem", headerText: "발생한 문제" },
-];
-
-// const members: string[] = [];
+const initialRows: { rowKey: string; headerText: string; bodyText?: string }[] =
+  [
+    { rowKey: "date", headerText: "기간" },
+    {
+      rowKey: "hypothesis",
+      headerText: "가설",
+      bodyText: "실험 카드가 아니라면 삭제",
+    },
+    {
+      rowKey: "indicator",
+      headerText: "지표",
+      bodyText: "실험 카드가 아니라면 삭제",
+    },
+    { rowKey: "status", headerText: "현재 상태" },
+    { rowKey: "problem", headerText: "발생한 문제" },
+  ];
 
 function CollapsibleTaskCard() {
   const [initialized, setInitialized] = useSyncedState<boolean>(
@@ -43,13 +52,13 @@ function CollapsibleTaskCard() {
     "rowsNum",
     initialRows.map((header) => header.rowKey)
   );
-  // const [managers, setManagers] = useSyncedState<string[]>("managers", []);
-  const [color, setColor] = useSyncedState("color", colors[1]);
+  const [color, setColor] = useSyncedState("color", colors[2]);
   const rows = useSyncedMap<string>("rows");
 
   const getRowHeaderKey = (rowKey: string) => `${rowKey}-header`;
   const getRowBodyKey = (rowKey: string) => `${rowKey}-body`;
 
+  /** 행 추가 */
   const addRow = () => {
     const newKey = (
       "00000" + Math.floor(Math.random() * 1_000_000).toString()
@@ -62,19 +71,12 @@ function CollapsibleTaskCard() {
     }
   };
 
+  /** 행 삭제 */
   const deleteRow = (rowKey: string) => {
     setRowKeys(rowKeys.filter((key) => key !== rowKey));
     rows.delete(getRowHeaderKey(rowKey));
     rows.delete(getRowBodyKey(rowKey));
   };
-
-  // const toggleManager = (manager: string) => {
-  //   if (managers.includes(manager)) {
-  //     setManagers(managers.filter((man) => man !== manager));
-  //   } else {
-  //     setManagers([...managers, manager]);
-  //   }
-  // };
 
   /** 위젯이 처음 생성되면 기본 테이블 행을 설정합니다. */
   useEffect(() => {
@@ -82,6 +84,9 @@ function CollapsibleTaskCard() {
     setInitialized(true);
     initialRows.forEach((initialRow) => {
       rows.set(getRowHeaderKey(initialRow.rowKey), initialRow.headerText);
+      if (initialRow.bodyText) {
+        rows.set(getRowBodyKey(initialRow.rowKey), initialRow.bodyText);
+      }
     });
   });
 
@@ -101,13 +106,6 @@ function CollapsibleTaskCard() {
         options: colors.map((color) => ({ tooltip: color, option: color })),
         selectedOption: color,
       },
-      // {
-      //   itemType: "dropdown",
-      //   tooltip: "담당자",
-      //   propertyName: "member",
-      //   options: members.map((member) => ({ option: member, label: member })),
-      //   selectedOption: "담당자 선택",
-      // },
     ],
     ({ propertyName, propertyValue }) => {
       if (propertyName === "toggle-collpased") {
@@ -115,9 +113,6 @@ function CollapsibleTaskCard() {
       } else if (propertyName === "color" && propertyValue) {
         setColor(propertyValue);
       }
-      // else if (propertyName === "member" && propertyValue) {
-      //   toggleManager(propertyValue);
-      // }
     }
   );
 
@@ -152,7 +147,7 @@ function CollapsibleTaskCard() {
       overflow="visible"
       effect={shadow}
     >
-      {/* 헤더 부분 */}
+      {/* 헤더 */}
       <AutoLayout
         direction="horizontal"
         horizontalAlignItems="center"
@@ -211,7 +206,6 @@ function CollapsibleTaskCard() {
         direction="horizontal"
         width={"fill-parent"}
         height={"hug-contents"}
-        // spacing={16}
       >
         <AutoLayout direction="vertical" width={"fill-parent"} spacing={4}>
           <Text fontSize={12}>{" 작성자 / 일시"}</Text>
@@ -249,7 +243,6 @@ function CollapsibleTaskCard() {
         </AutoLayout>
       </AutoLayout>
 
-      {/* 항상 노출되는 내용 */}
       <Input
         width={"fill-parent"}
         placeholder="내용"
@@ -268,7 +261,7 @@ function CollapsibleTaskCard() {
         }}
       />
 
-      {/* 상세 내용 테이블 */}
+      {/* 토글 테이블 */}
       <AutoLayout
         direction="vertical"
         width={"fill-parent"}
