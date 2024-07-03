@@ -15,19 +15,19 @@ const colors: string[] = ["#FFA198", "#BDE3FF", "#AFF4C6", "#FFE8A3"];
 
 const initialRows: { rowKey: string; headerText: string; bodyText?: string }[] =
   [
-    { rowKey: "date", headerText: "기간" },
+    { rowKey: "date", headerText: "date" },
     {
       rowKey: "hypothesis",
-      headerText: "가설",
-      bodyText: "실험 카드가 아니라면 삭제",
+      headerText: "hypothesis",
+      bodyText: "delete if it's not experiment",
     },
     {
       rowKey: "indicator",
-      headerText: "지표",
-      bodyText: "실험 카드가 아니라면 삭제",
+      headerText: "indicator",
+      bodyText: "delete if it's not experiment",
     },
-    { rowKey: "status", headerText: "현재 상태" },
-    { rowKey: "problem", headerText: "발생한 문제" },
+    { rowKey: "status", headerText: "status" },
+    { rowKey: "problem", headerText: "problem" },
   ];
 
 function CollapsibleTaskCard() {
@@ -58,7 +58,7 @@ function CollapsibleTaskCard() {
   const getRowHeaderKey = (rowKey: string) => `${rowKey}-header`;
   const getRowBodyKey = (rowKey: string) => `${rowKey}-body`;
 
-  /** 행 추가 */
+  /** add row to toggle table */
   const addRow = () => {
     const newKey = (
       "00000" + Math.floor(Math.random() * 1_000_000).toString()
@@ -71,14 +71,14 @@ function CollapsibleTaskCard() {
     }
   };
 
-  /** 행 삭제 */
+  /** delete row of toggle table */
   const deleteRow = (rowKey: string) => {
     setRowKeys(rowKeys.filter((key) => key !== rowKey));
     rows.delete(getRowHeaderKey(rowKey));
     rows.delete(getRowBodyKey(rowKey));
   };
 
-  /** 위젯이 처음 생성되면 기본 테이블 행을 설정합니다. */
+  /** when first time widget rendered, add base rows to toggle table */
   useEffect(() => {
     if (initialized) return;
     setInitialized(true);
@@ -90,18 +90,18 @@ function CollapsibleTaskCard() {
     });
   });
 
-  /** 위젯 메뉴 설정 */
+  /** widget property menu */
   usePropertyMenu(
     [
       {
         itemType: "toggle",
-        tooltip: collapsed ? "펼치기" : "접기",
+        tooltip: collapsed ? "expand" : "collapse",
         propertyName: "toggle-collpased",
         isToggled: false,
       },
       {
         itemType: "color-selector",
-        tooltip: "카드 색상",
+        tooltip: "Card Color",
         propertyName: "color",
         options: colors.map((color) => ({ tooltip: color, option: color })),
         selectedOption: color,
@@ -147,7 +147,7 @@ function CollapsibleTaskCard() {
       overflow="visible"
       effect={shadow}
     >
-      {/* 헤더 */}
+      {/* header */}
       <AutoLayout
         direction="horizontal"
         horizontalAlignItems="center"
@@ -168,21 +168,23 @@ function CollapsibleTaskCard() {
         >
           {[
             {
-              text: "진행",
+              text: "ongoing",
               state: onProgress,
               setState: setOnProgress,
               color: "#ffff00",
             },
             {
-              text: "이슈",
+              text: "issue",
               state: trouble,
               setState: setTrouble,
               color: "#ff0000",
             },
-            { text: "완료", state: done, setState: setDone, color: "#00ff00" },
+            { text: "done", state: done, setState: setDone, color: "#00ff00" },
           ].map((status) => (
             <AutoLayout
               direction="vertical"
+              minWidth={32}
+              width={"hug-contents"}
               spacing={6}
               horizontalAlignItems="center"
             >
@@ -208,7 +210,7 @@ function CollapsibleTaskCard() {
         height={"hug-contents"}
       >
         <AutoLayout direction="vertical" width={"fill-parent"} spacing={4}>
-          <Text fontSize={12}>{" 작성자 / 일시"}</Text>
+          <Text fontSize={12}>{" created by / date"}</Text>
           <Input
             fontSize={14}
             value={author}
@@ -225,7 +227,7 @@ function CollapsibleTaskCard() {
           />
         </AutoLayout>
         <AutoLayout direction="vertical" width={"fill-parent"} spacing={4}>
-          <Text fontSize={12}>{" 담당자"}</Text>
+          <Text fontSize={12}>{" person in charge"}</Text>
           <Input
             fontSize={14}
             value={manager}
@@ -245,7 +247,7 @@ function CollapsibleTaskCard() {
 
       <Input
         width={"fill-parent"}
-        placeholder="내용"
+        placeholder="content"
         value={mainContentText}
         fontSize={24}
         fontWeight={600}
@@ -261,7 +263,7 @@ function CollapsibleTaskCard() {
         }}
       />
 
-      {/* 토글 테이블 */}
+      {/* toggle table */}
       <AutoLayout
         direction="vertical"
         width={"fill-parent"}
@@ -287,7 +289,7 @@ function CollapsibleTaskCard() {
               spacing={1}
               strokeWidth={1}
             >
-              {/* 행 헤더 */}
+              {/* row header */}
               <AutoLayout
                 height={"fill-parent"}
                 fill="#FFFFFF"
@@ -309,7 +311,7 @@ function CollapsibleTaskCard() {
                 />
               </AutoLayout>
 
-              {/* 행 내용 */}
+              {/* row body (content) */}
               <AutoLayout
                 width={"fill-parent"}
                 height={"fill-parent"}
@@ -328,7 +330,7 @@ function CollapsibleTaskCard() {
                     padding: { horizontal: 16, vertical: 24, right: 0 },
                   }}
                 />
-                {/* 행 삭제 버튼 */}
+                {/* row delete button */}
                 <AutoLayout
                   height={"fill-parent"}
                   fill={"#FFFFFF"}
@@ -351,7 +353,7 @@ function CollapsibleTaskCard() {
         })}
       </AutoLayout>
 
-      {/* '행 추가' 버튼 */}
+      {/* 'add row' button */}
       <AutoLayout
         hidden={collapsed}
         width={"fill-parent"}
@@ -365,7 +367,7 @@ function CollapsibleTaskCard() {
         onClick={addRow}
       >
         <Text fontSize={12} fill={"#FFFFFF"}>
-          행 추가
+          add row
         </Text>
       </AutoLayout>
     </AutoLayout>
